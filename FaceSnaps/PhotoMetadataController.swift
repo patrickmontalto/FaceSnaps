@@ -11,7 +11,7 @@ import CoreLocation
 
 class PhotoMetadataController: UITableViewController {
     
-    private let photo: UIImage
+    let photo: UIImage
     // Image, location, and tags
     let sections = [Section.Image, Section.Location, Section.Tags]
     
@@ -61,9 +61,20 @@ class PhotoMetadataController: UITableViewController {
     // Only init the locationManager if the user taps the row. This avoids unnecessary permission requests.
     var locationManager: LocationManager!
     var location: CLLocation?
+    
+    lazy var tagsTextField: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = "summer, vacation"
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.autocapitalizationType = .none
+        return textField
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let saveButton = UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(PhotoMetadataController.savePhotoWithMetadata))
+        navigationItem.rightBarButtonItem = saveButton
     }
 
 }
@@ -113,10 +124,47 @@ extension PhotoMetadataController {
                 locationLabel.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor),
                 locationLabel.leftAnchor.constraint(equalTo: cell.contentView.leftAnchor, constant: 20.0)
             ])
+        case (Section.Tags, 0):
+            cell.contentView.addSubview(tagsTextField)
+            
+            NSLayoutConstraint.activate([
+                tagsTextField.topAnchor.constraint(equalTo: cell.contentView.topAnchor),
+                tagsTextField.rightAnchor.constraint(equalTo: cell.contentView.rightAnchor, constant: 16.0),
+                tagsTextField.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor),
+                tagsTextField.leftAnchor.constraint(equalTo: cell.contentView.leftAnchor, constant: 20.0)
+            ])
+            
+            
+            
         default: break
         }
         
         return cell
+    }
+}
+
+// MARK: - Persistence
+extension PhotoMetadataController {
+    func savePhotoWithMetadata() {
+        let tags = tagsFromTextField()
+        // TODO: Is this being saved??
+        Photo.photo(withImage: photo, tags: tags, location: location)
+        
+        CoreDataController.save()
+        dismiss(animated: true, completion: nil)
+    }
+}
+
+// MARK: - Helper Methods
+extension PhotoMetadataController {
+    func tagsFromTextField() -> [String] {
+        guard let tags = tagsTextField.text else { return [] }
+        
+        let commaSeparatedSubSequences = tags.characters.split(separator: ",")
+        let commaSeparatedStrings = commaSeparatedSubSequences.map(String.init)
+        let lowercaseTags = commaSeparatedStrings.map { $0.lowercased() }
+        
+        return lowercaseTags.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
     }
 }
 
@@ -154,6 +202,18 @@ extension PhotoMetadataController {
                 }
             }
         default: break
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        switch section {
+        case Section.Image:
+            return "Photo"
+        case Section.Location:
+            return "Enter a location"
+        case Section.Tags:
+            return "Enter tags"
+        default: return nil
         }
     }
 }

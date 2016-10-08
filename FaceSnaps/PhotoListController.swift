@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreData
 
 class PhotoListController: UIViewController {
     
@@ -29,19 +30,51 @@ class PhotoListController: UIViewController {
         manager.delegate = self
         return manager
     }()
+    
+    lazy var dataSource: UICollectionViewDataSource = {
+        return PhotoDataSource(fetchRequest: Photo.allPhotosRequest, collectionView: self.collectionView)
+    }()
+    
+    lazy var collectionView: UICollectionView = {
+        let collectionViewLayout = UICollectionViewFlowLayout()
+        
+        let screenWidth = UIScreen.main.bounds.size.width
+        let paddingDistance: CGFloat = 16.0
+        let itemSize = (screenWidth - paddingDistance)/2.0
+        
+        collectionViewLayout.itemSize = CGSize(width: itemSize, height: itemSize)
+        
+        let collectionView = UICollectionView(frame: CGRect.zero, collectionViewLayout: collectionViewLayout)
+        collectionView.backgroundColor = .white
+        collectionView.register(PhotoCell.self, forCellWithReuseIdentifier: PhotoCell.reuseIdentifier)
+        
+        return collectionView
+    }()
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        setupNavigationBar()
+        
+        collectionView.dataSource = dataSource
+        // Remove white space between Navbar and Collectionview
+        self.automaticallyAdjustsScrollViewInsets = false
     }
     
     // MARK: - Layout
     
     override func viewWillLayoutSubviews() {
+        view.addSubview(collectionView)
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        
         view.addSubview(cameraButton)
         cameraButton.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
+            collectionView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            collectionView.topAnchor.constraint(equalTo: topLayoutGuide.bottomAnchor),
+            collectionView.rightAnchor.constraint(equalTo: view.rightAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             cameraButton.leftAnchor.constraint(equalTo: view.leftAnchor),
             cameraButton.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             cameraButton.rightAnchor.constraint(equalTo: view.rightAnchor),
@@ -72,6 +105,49 @@ extension PhotoListController: MediaPickerManagerDelegate {
         mediaPickerManager.dismissImagePickerController(animated: true) { 
             self.present(navigationController, animated: true, completion: nil)
         }
+        
+    }
+}
+
+// MARK: - Navigation
+extension PhotoListController {
+    
+    func setupNavigationBar() {
+        // TODO: Implement location sorting
+        let sortTagsButton = UIBarButtonItem(title: "Tags", style: .plain, target: self, action: #selector(PhotoListController.presentSortController))
+        navigationItem.setRightBarButtonItems([sortTagsButton], animated: true)
+    }
+    
+    @objc private func presentSortController() {
+        let tagDataSource = SortableDataSource<Tag>(fetchRequest: Tag.allTagsRequest, managedObjectContext: CoreDataController.sharedInstance.managedObjectContext)
+        
+        let sortItemSelector = SortItemSelector(sortItems: tagDataSource.results)
+        
+        let sortController = PhotoSortListController(dataSource: tagDataSource, sortItemSelector: sortItemSelector)
+        sortController.onSortSelection = { checkedItems in
+            
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: Photo.entityName)
+            fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: true)]
+            
+            // Check that checkedItems isn't empty, otherwise there's no need for a predicate
+            if !checkedItems.isEmpty {
+                var predicates = [NSPredicate]()
+                for tag in checkedItems {
+                    let predicate = NSPredicate(format: "%K CONTAINS %@", "tags.title", tag.title)
+                    predicates.append(predicate)
+                }
+
+                let compoundPredicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+                
+                fetchRequest.predicate = compoundPredicate
+            }
+            
+            fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: true)]
+        }
+        
+        let navigationController = UINavigationController(rootViewController: sortController)
+        
+        present(navigationController, animated: true, completion: nil)
         
     }
 }
