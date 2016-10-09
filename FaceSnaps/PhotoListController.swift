@@ -31,7 +31,7 @@ class PhotoListController: UIViewController {
         return manager
     }()
     
-    lazy var dataSource: UICollectionViewDataSource = {
+    lazy var dataSource: PhotoDataSource = {
         return PhotoDataSource(fetchRequest: Photo.allPhotosRequest, collectionView: self.collectionView)
     }()
     
@@ -126,9 +126,6 @@ extension PhotoListController {
         let sortController = PhotoSortListController(dataSource: tagDataSource, sortItemSelector: sortItemSelector)
         sortController.onSortSelection = { checkedItems in
             
-            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: Photo.entityName)
-            fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: true)]
-            
             // Check that checkedItems isn't empty, otherwise there's no need for a predicate
             if !checkedItems.isEmpty {
                 var predicates = [NSPredicate]()
@@ -138,11 +135,12 @@ extension PhotoListController {
                 }
 
                 let compoundPredicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
-                
-                fetchRequest.predicate = compoundPredicate
+                // Use data source to perform fetch with predicate
+                self.dataSource.performFetch(withPredicate: compoundPredicate)
+            } else {
+                // Reset to all photos in data store
+                self.dataSource.performFetch(withPredicate: nil)
             }
-            
-            fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: true)]
         }
         
         let navigationController = UINavigationController(rootViewController: sortController)

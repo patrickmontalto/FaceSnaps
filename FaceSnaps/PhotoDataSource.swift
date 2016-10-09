@@ -21,6 +21,13 @@ class PhotoDataSource: NSObject {
         self.fetchedResultsController = PhotoFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext, collectionView: self.collectionView)
         super.init()
     }
+    
+    // Use data source to interact with fetched results controller from photo list controller
+    func performFetch(withPredicate predicate: NSPredicate?) {
+        self.fetchedResultsController.performFetch(withPredicate: predicate)
+        // Inform the collectionView to reload data (fetchedResultsController wouldn't know otherwise)
+        collectionView.reloadData()
+    }
 }
 
 // MARK: - UICollectionViewDataSource
