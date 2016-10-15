@@ -59,6 +59,8 @@ class PhotoListController: UIViewController {
         collectionView.dataSource = dataSource
         // Remove white space between Navbar and Collectionview
         self.automaticallyAdjustsScrollViewInsets = false
+        
+        self.enableLongPressDeletion()
     }
     
     // MARK: - Layout
@@ -149,6 +151,51 @@ extension PhotoListController {
         
     }
 }
+
+// MARK: - Photo selection
+
+extension PhotoListController: UIGestureRecognizerDelegate {
+    
+    func enableLongPressDeletion() {
+        let lpgr = UILongPressGestureRecognizer(target: self, action: #selector(PhotoListController.presentDeletion(gestureRecognizer:)))
+        lpgr.minimumPressDuration = 1
+        lpgr.delaysTouchesBegan = true
+        lpgr.delegate = self
+        self.collectionView.addGestureRecognizer(lpgr)
+    }
+    
+    func presentDeletion(gestureRecognizer: UILongPressGestureRecognizer) {
+        guard gestureRecognizer.state == .began else {
+            return
+        }
+        
+        let point = gestureRecognizer.location(in: self.collectionView)
+        guard let indexPath = self.collectionView.indexPathForItem(at: point) else {
+            // TODO: No index path for point
+            return
+        }
+        
+        guard let cell = self.collectionView.cellForItem(at: indexPath) else {
+            // TODO: No cell at indexPath
+            return
+        }
+        // TODO: Add Button to all cells
+        // Add delete_icon button to top left corner of cell
+        let deleteIcon = UIImage(named: "delete_icon")!
+        let button = UIButton(frame: CGRect(x: 0, y: 0, width: 25, height: 25))
+        button.setBackgroundImage(deleteIcon, for: .normal)
+        // Animate cells
+        CellAnimator.animateAllCells(inCollectionView: self.collectionView)
+        cell.addSubview(button)
+    }
+    
+    func hideDeletion() {
+        
+    }
+    
+}
+
+
 
 
 

@@ -37,6 +37,9 @@ class MediaPickerManager: NSObject {
             imagePickerController.sourceType = .photoLibrary
         }
         imagePickerController.mediaTypes = [kUTTypeImage as String]
+        
+        // Edit image to square aspect ratio
+        imagePickerController.allowsEditing = true
     }
     
     func presentImagePickerController(animated: Bool) {
@@ -52,7 +55,7 @@ class MediaPickerManager: NSObject {
 extension MediaPickerManager: UINavigationControllerDelegate, UIImagePickerControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         
-        let image = info[UIImagePickerControllerOriginalImage] as! UIImage
+        let image = info[UIImagePickerControllerEditedImage] as! UIImage
         
         // Pass image to our delegate
         delegate?.mediaPickerManager(manager: self, didFinishPickingImage: image)

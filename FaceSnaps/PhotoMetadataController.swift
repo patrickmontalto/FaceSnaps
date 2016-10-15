@@ -147,8 +147,7 @@ extension PhotoMetadataController {
 extension PhotoMetadataController {
     func savePhotoWithMetadata() {
         let tags = tagsFromTextField()
-        // TODO: Is this being saved??
-        Photo.photo(withImage: photo, tags: tags, location: location)
+        let _ = Photo.photo(withImage: photo, tags: tags, location: location)
         
         CoreDataController.save()
         dismiss(animated: true, completion: nil)
