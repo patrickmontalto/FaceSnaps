@@ -29,6 +29,8 @@
 		3A9FA6181DA17FF800FDFE63 /* FilteredImageBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A9FA6171DA17FF800FDFE63 /* FilteredImageBuilder.swift */; };
 		3A9FA61A1DA29BE800FDFE63 /* FilteredImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A9FA6191DA29BE800FDFE63 /* FilteredImageCell.swift */; };
 		CDCE98511DB1B75400BBB0FF /* CellAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCE98501DB1B75400BBB0FF /* CellAnimator.swift */; };
+		CDE86F331DB4069E00076D65 /* UIViewControllerExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE86F321DB4069E00076D65 /* UIViewControllerExtensions.swift */; };
+		CDE86F351DB43F6C00076D65 /* PhotoDeletionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE86F341DB43F6C00076D65 /* PhotoDeletionManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,6 +58,8 @@
 		3A9FA6171DA17FF800FDFE63 /* FilteredImageBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilteredImageBuilder.swift; sourceTree = "<group>"; };
 		3A9FA6191DA29BE800FDFE63 /* FilteredImageCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilteredImageCell.swift; sourceTree = "<group>"; };
 		CDCE98501DB1B75400BBB0FF /* CellAnimator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CellAnimator.swift; sourceTree = "<group>"; };
+		CDE86F321DB4069E00076D65 /* UIViewControllerExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIViewControllerExtensions.swift; sourceTree = "<group>"; };
+		CDE86F341DB43F6C00076D65 /* PhotoDeletionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoDeletionManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +96,7 @@
 				3A32DD251DA16BEA00CD2669 /* View */,
 				3A32DD241DA16BE200CD2669 /* Controller */,
 				3A32DD231DA16BD800CD2669 /* Helpers */,
+				CDE86F311DB4068200076D65 /* Convenience */,
 				3A32DD0F1DA0309100CD2669 /* AppDelegate.swift */,
 				3A32DD161DA0309100CD2669 /* Assets.xcassets */,
 				3A32DD181DA0309100CD2669 /* LaunchScreen.storyboard */,
@@ -108,6 +113,7 @@
 				3A32A6AF1DA30A8500AEE45F /* LocationManager.swift */,
 				3A32A6C71DA9845500AEE45F /* SortItemSelector.swift */,
 				CDCE98501DB1B75400BBB0FF /* CellAnimator.swift */,
+				CDE86F341DB43F6C00076D65 /* PhotoDeletionManager.swift */,
 			);
 			name = Helpers;
 			sourceTree = "<group>";
@@ -145,6 +151,14 @@
 				3A32A6C51DA97A8E00AEE45F /* SortableDataSource.swift */,
 			);
 			name = Model;
+			sourceTree = "<group>";
+		};
+		CDE86F311DB4068200076D65 /* Convenience */ = {
+			isa = PBXGroup;
+			children = (
+				CDE86F321DB4069E00076D65 /* UIViewControllerExtensions.swift */,
+			);
+			name = Convenience;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -225,6 +239,7 @@
 				3A32A6C61DA97A8E00AEE45F /* SortableDataSource.swift in Sources */,
 				3A32A6B51DA5F2A600AEE45F /* FaceSnap.xcdatamodeld in Sources */,
 				3A9FA6181DA17FF800FDFE63 /* FilteredImageBuilder.swift in Sources */,
+				CDE86F351DB43F6C00076D65 /* PhotoDeletionManager.swift in Sources */,
 				3A32A6C21DA94D8F00AEE45F /* PhotoCell.swift in Sources */,
 				3A32DD221DA1628800CD2669 /* MediaPickerManager.swift in Sources */,
 				3A9FA61A1DA29BE800FDFE63 /* FilteredImageCell.swift in Sources */,
@@ -232,6 +247,7 @@
 				3A32A6BC1DA6069900AEE45F /* Location.swift in Sources */,
 				3A32A6C41DA95BE800AEE45F /* PhotoSortListController.swift in Sources */,
 				CDCE98511DB1B75400BBB0FF /* CellAnimator.swift in Sources */,
+				CDE86F331DB4069E00076D65 /* UIViewControllerExtensions.swift in Sources */,
 				3A32A6B01DA30A8500AEE45F /* LocationManager.swift in Sources */,
 				3A32A6B21DA5F21C00AEE45F /* CoreDataController.swift in Sources */,
 				3A32A6B71DA6060A00AEE45F /* Photo.swift in Sources */,

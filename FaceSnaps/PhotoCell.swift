@@ -13,8 +13,21 @@ class PhotoCell: UICollectionViewCell {
     
     let imageView = UIImageView()
     
+    var deleteButton = UIButton(frame: CGRect(x: 0, y: 0, width: 25, height: 25))
+    
     override func layoutSubviews() {
+        // Photo image
         contentView.addSubview(imageView)
+        
+        // Delete button (hidden by default)
+        let deleteIcon = UIImage(named: "delete_icon")!
+        deleteButton.setBackgroundImage(deleteIcon, for: .normal)
+        
+        // TODO: Remove ?
+//        deleteButton.addTarget(self, action: #selector(PhotoCell.deletePhoto(sender:)), for: .touchUpInside)
+        deleteButton.isHidden = true
+        contentView.addSubview(deleteButton)
+        
         imageView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
@@ -23,6 +36,10 @@ class PhotoCell: UICollectionViewCell {
             imageView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
             imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
+    }
+    
+    func deletePhoto(sender: UIButton) {
+        // Need to tell the PhotoListController to deletePhoto
     }
 }
 

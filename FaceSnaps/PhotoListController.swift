@@ -32,7 +32,7 @@ class PhotoListController: UIViewController {
     }()
     
     lazy var dataSource: PhotoDataSource = {
-        return PhotoDataSource(fetchRequest: Photo.allPhotosRequest, collectionView: self.collectionView)
+        return PhotoDataSource(fetchRequest: Photo.allPhotosRequest, collectionView: self.collectionView, photoDeletionDelegate: self)
     }()
     
     lazy var collectionView: UICollectionView = {
@@ -48,10 +48,29 @@ class PhotoListController: UIViewController {
         collectionView.backgroundColor = .white
         collectionView.register(PhotoCell.self, forCellWithReuseIdentifier: PhotoCell.reuseIdentifier)
         
+        collectionView.delegate = self
+        
         return collectionView
     }()
     
-
+    lazy var cancelEditingButton: UIBarButtonItem =  {
+       return UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(PhotoListController.hideDeletion))
+    }()
+    
+    var editingModeEnabled: Bool = false {
+        didSet {
+            if editingModeEnabled {
+                cancelEditingButton.tintColor = self.view.tintColor
+                cancelEditingButton.isEnabled = true
+                CellAnimator.animateAllCells(inCollectionView: self.collectionView)
+            } else {
+                cancelEditingButton.tintColor = UIColor.clear
+                cancelEditingButton.isEnabled = false
+                CellAnimator.stopAnimatingAllCells(inCollectionView: self.collectionView)
+            }
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavigationBar()
@@ -61,6 +80,11 @@ class PhotoListController: UIViewController {
         self.automaticallyAdjustsScrollViewInsets = false
         
         self.enableLongPressDeletion()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        // Make sure edit mode is disabled when appearing
+        editingModeEnabled = false
     }
     
     // MARK: - Layout
@@ -73,14 +97,14 @@ class PhotoListController: UIViewController {
         cameraButton.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            collectionView.leftAnchor.constraint(equalTo: view.leftAnchor),
-            collectionView.topAnchor.constraint(equalTo: topLayoutGuide.bottomAnchor),
-            collectionView.rightAnchor.constraint(equalTo: view.rightAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             cameraButton.leftAnchor.constraint(equalTo: view.leftAnchor),
             cameraButton.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             cameraButton.rightAnchor.constraint(equalTo: view.rightAnchor),
-            cameraButton.heightAnchor.constraint(equalToConstant: 56.0)
+            cameraButton.heightAnchor.constraint(equalToConstant: 56.0),
+            collectionView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            collectionView.topAnchor.constraint(equalTo: topLayoutGuide.bottomAnchor),
+            collectionView.rightAnchor.constraint(equalTo: view.rightAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: cameraButton.topAnchor),
         ])
     }
     
@@ -118,6 +142,14 @@ extension PhotoListController {
         // TODO: Implement location sorting
         let sortTagsButton = UIBarButtonItem(title: "Tags", style: .plain, target: self, action: #selector(PhotoListController.presentSortController))
         navigationItem.setRightBarButtonItems([sortTagsButton], animated: true)
+        
+        // Cancel editing button for photo deletion
+        navigationItem.setLeftBarButtonItems([cancelEditingButton], animated: true)
+        
+        if !editingModeEnabled {
+            cancelEditingButton.tintColor = UIColor.clear
+            cancelEditingButton.isEnabled = false
+        }
     }
     
     @objc private func presentSortController() {
@@ -152,6 +184,28 @@ extension PhotoListController {
     }
 }
 
+// MARK: - PhotoDeletionManagerDelegate
+
+extension PhotoListController: PhotoDeletionManagerDelegate {
+    func didTapDelete(atRow row: Int) {
+        let indexPath = IndexPath(row: row, section: 0)
+        print("The indexPath was calculated as: \(indexPath)")
+        let photo = dataSource.fetchedResultsController.object(at: indexPath)
+        
+        // TODO: Delete here and save?
+        alertForPhotoDeletion(photo: photo)
+    }
+    // MARK: Ask user for photo deletion confirmation
+    private func alertForPhotoDeletion(photo: NSManagedObject) {
+        let delete = UIAlertAction(title: "Delete", style: .default) { (action) in
+            CoreDataController.sharedInstance.managedObjectContext.delete(photo)
+            CoreDataController.sharedInstance.saveContext()
+        }
+        let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        displayAlert(withMessage: "Delete photo?", title: "", actions: [delete, cancel])
+    }
+}
+
 // MARK: - Photo selection
 
 extension PhotoListController: UIGestureRecognizerDelegate {
@@ -169,30 +223,50 @@ extension PhotoListController: UIGestureRecognizerDelegate {
             return
         }
         
-        let point = gestureRecognizer.location(in: self.collectionView)
-        guard let indexPath = self.collectionView.indexPathForItem(at: point) else {
-            // TODO: No index path for point
-            return
-        }
+        // Make deletion button visible on all visible cells
+        toggleCellDeletionButton(visible: true)
         
-        guard let cell = self.collectionView.cellForItem(at: indexPath) else {
-            // TODO: No cell at indexPath
-            return
-        }
-        // TODO: Add Button to all cells
-        // Add delete_icon button to top left corner of cell
-        let deleteIcon = UIImage(named: "delete_icon")!
-        let button = UIButton(frame: CGRect(x: 0, y: 0, width: 25, height: 25))
-        button.setBackgroundImage(deleteIcon, for: .normal)
-        // Animate cells
-        CellAnimator.animateAllCells(inCollectionView: self.collectionView)
-        cell.addSubview(button)
+        // Enable editing mode to start animating ALL cells (both visible and not visible)
+        editingModeEnabled = true
     }
     
+    func toggleCellDeletionButton(visible: Bool) {
+        for cell in collectionView.visibleCells as! [PhotoCell] {
+            cell.deleteButton.isHidden = !visible
+        }
+    }
+    
+    // Tapping Cancel in Nav Bar
     func hideDeletion() {
-        
+        editingModeEnabled = false
     }
     
+}
+
+// MARK: - UICollectionViewDelegate
+
+extension PhotoListController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        toggleCellAnimation(cell: cell)
+
+    }
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        toggleCellAnimation(cell: cell)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        print(indexPath)
+    }
+    
+    private func toggleCellAnimation(cell: UICollectionViewCell) {
+        if editingModeEnabled {
+            CellAnimator.startWiggling(view: cell)
+            (cell as! PhotoCell).deleteButton.isHidden = false
+        } else {
+            CellAnimator.stopWiggling(view: cell)
+            (cell as! PhotoCell).deleteButton.isHidden = true
+        }
+    }
 }
 
 

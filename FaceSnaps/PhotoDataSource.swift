@@ -15,10 +15,13 @@ class PhotoDataSource: NSObject {
     let collectionView: UICollectionView
     let managedObjectContext = CoreDataController.sharedInstance.managedObjectContext
     let fetchedResultsController: PhotoFetchedResultsController
+    let photoDeletionManager: PhotoDeletionManager
     
-    init(fetchRequest: NSFetchRequest<NSManagedObject>, collectionView: UICollectionView) {
+    init(fetchRequest: NSFetchRequest<NSManagedObject>, collectionView: UICollectionView, photoDeletionDelegate: PhotoDeletionManagerDelegate) {
         self.collectionView = collectionView
         self.fetchedResultsController = PhotoFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext, collectionView: self.collectionView)
+        photoDeletionManager = PhotoDeletionManager()
+        photoDeletionManager.delegate = photoDeletionDelegate
         super.init()
     }
     
@@ -51,8 +54,14 @@ extension PhotoDataSource: UICollectionViewDataSource {
         
         cell.imageView.image = photo.uiImage
         
+        // For deletion, set tag as row
+        cell.deleteButton.tag = indexPath.row
+        // MARK: temporarily add target here
+        cell.deleteButton.addTarget(self, action: #selector(photoDeletionManager.deletePhoto(sender:)), for: .touchUpInside)
+        
         return cell
     }
+    
 }
 
 

@@ -21,7 +21,6 @@ struct CellAnimator {
     
     // Animate all cells in collectionView
     static func animateAllCells(inCollectionView collectionView: UICollectionView) {
-     //   collectionView.visibleCells.map { startWiggling(view: $0) }
         for cell in collectionView.visibleCells {
             startWiggling(view: cell)
         }
@@ -29,7 +28,7 @@ struct CellAnimator {
     
     // Stop animating all cells in collectionView
     static func stopAnimatingAllCells(inCollectionView collectionView: UICollectionView) {
-        
+        let _ = collectionView.visibleCells.map { stopWiggling(view: $0) }
     }
     
     // Begin wiggling animation on UIView
