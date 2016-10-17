@@ -55,7 +55,9 @@ class MediaPickerManager: NSObject {
 extension MediaPickerManager: UINavigationControllerDelegate, UIImagePickerControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         
-        let image = info[UIImagePickerControllerEditedImage] as! UIImage
+        let editedImage = info[UIImagePickerControllerEditedImage] as! UIImage
+        
+        let image = UIImage(cgImage: editedImage.cgImage!, scale: editedImage.scale, orientation: .upMirrored)
         
         // Pass image to our delegate
         delegate?.mediaPickerManager(manager: self, didFinishPickingImage: image)
