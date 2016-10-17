@@ -9,17 +9,38 @@
 import Foundation
 import UIKit
 
-protocol PhotoDeletionManagerDelegate: class {
+@objc protocol PhotoDeletionManagerDelegate: class {
     func didTapDelete(atRow row: Int)
+    
+    func userLongPressInitiated(gestureRecognizer: UILongPressGestureRecognizer)
 }
 
 // Communicates to PhotoListController user actions taken to delete photo
-class PhotoDeletionManager {
+class PhotoDeletionManager: NSObject, UIGestureRecognizerDelegate {
     
-    weak var delegate: PhotoDeletionManagerDelegate?
+    private let collectionView: UICollectionView
+    
+    weak var delegate: PhotoDeletionManagerDelegate!
+    
+    init(collectionView: UICollectionView, delegate: PhotoDeletionManagerDelegate) {
+        self.collectionView = collectionView
+        self.delegate = delegate
+        super.init()
+        self.enableLongPressDeletion()
+    }
+    
+    // MARK: UIGestureRecognizerDelegate
+    func enableLongPressDeletion() {
+        let lpgr = UILongPressGestureRecognizer(target: delegate, action: #selector(delegate.userLongPressInitiated(gestureRecognizer:)))
+        lpgr.minimumPressDuration = 1
+        lpgr.delaysTouchesBegan = true
+        lpgr.delegate = self
+        collectionView.addGestureRecognizer(lpgr)
+    }
     
     @objc func deletePhoto(sender: UIButton) {
         let row = sender.tag
         delegate?.didTapDelete(atRow: row)
     }
 }
+

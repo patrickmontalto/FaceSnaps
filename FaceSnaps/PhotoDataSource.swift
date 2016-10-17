@@ -17,11 +17,13 @@ class PhotoDataSource: NSObject {
     let fetchedResultsController: PhotoFetchedResultsController
     let photoDeletionManager: PhotoDeletionManager
     
+    var editingModeEnabled: Bool
+    
     init(fetchRequest: NSFetchRequest<NSManagedObject>, collectionView: UICollectionView, photoDeletionDelegate: PhotoDeletionManagerDelegate) {
         self.collectionView = collectionView
         self.fetchedResultsController = PhotoFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext, collectionView: self.collectionView)
-        photoDeletionManager = PhotoDeletionManager()
-        photoDeletionManager.delegate = photoDeletionDelegate
+        self.photoDeletionManager = PhotoDeletionManager(collectionView: collectionView, delegate: photoDeletionDelegate)
+        self.editingModeEnabled = false
         super.init()
     }
     
@@ -57,7 +59,9 @@ extension PhotoDataSource: UICollectionViewDataSource {
         // For deletion, set tag as row
         cell.deleteButton.tag = indexPath.row
         // MARK: temporarily add target here
-        cell.deleteButton.addTarget(self, action: #selector(photoDeletionManager.deletePhoto(sender:)), for: .touchUpInside)
+        cell.deleteButton.addTarget(photoDeletionManager, action: #selector(photoDeletionManager.deletePhoto(sender:)), for: .touchUpInside)
+        // If editing mode is enabled, show delete button
+        cell.deleteButton.isHidden = !editingModeEnabled
         
         return cell
     }

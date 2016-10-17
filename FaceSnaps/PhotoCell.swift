@@ -23,9 +23,6 @@ class PhotoCell: UICollectionViewCell {
         let deleteIcon = UIImage(named: "delete_icon")!
         deleteButton.setBackgroundImage(deleteIcon, for: .normal)
         
-        // TODO: Remove ?
-//        deleteButton.addTarget(self, action: #selector(PhotoCell.deletePhoto(sender:)), for: .touchUpInside)
-        deleteButton.isHidden = true
         contentView.addSubview(deleteButton)
         
         imageView.translatesAutoresizingMaskIntoConstraints = false

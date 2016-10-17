@@ -46,6 +46,10 @@ class PhotoFetchedResultsController: NSFetchedResultsController<NSManagedObject>
     // MARK: - NSFetchedResultsControllerDelegate
     
     // Informed that content has changed
+    
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+    }
+    
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         collectionView.reloadData()
     }

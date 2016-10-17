@@ -54,7 +54,7 @@ class PhotoListController: UIViewController {
     }()
     
     lazy var cancelEditingButton: UIBarButtonItem =  {
-       return UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(PhotoListController.hideDeletion))
+       return UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(PhotoListController.cancelDeletionMode))
     }()
     
     var editingModeEnabled: Bool = false {
@@ -63,10 +63,14 @@ class PhotoListController: UIViewController {
                 cancelEditingButton.tintColor = self.view.tintColor
                 cancelEditingButton.isEnabled = true
                 CellAnimator.animateAllCells(inCollectionView: self.collectionView)
+                dataSource.editingModeEnabled = true
             } else {
+                // Hide button on all visible cells
+                toggleCellDeletionButton(visible: false)
                 cancelEditingButton.tintColor = UIColor.clear
                 cancelEditingButton.isEnabled = false
                 CellAnimator.stopAnimatingAllCells(inCollectionView: self.collectionView)
+                dataSource.editingModeEnabled = false
             }
         }
     }
@@ -78,8 +82,6 @@ class PhotoListController: UIViewController {
         collectionView.dataSource = dataSource
         // Remove white space between Navbar and Collectionview
         self.automaticallyAdjustsScrollViewInsets = false
-        
-        self.enableLongPressDeletion()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -190,35 +192,14 @@ extension PhotoListController: PhotoDeletionManagerDelegate {
     func didTapDelete(atRow row: Int) {
         let indexPath = IndexPath(row: row, section: 0)
         print("The indexPath was calculated as: \(indexPath)")
+        // TODO: Make sure that the objectAtIndexPath is the correct object (did the fetched Objects update after deletion?)
         let photo = dataSource.fetchedResultsController.object(at: indexPath)
         
-        // TODO: Delete here and save?
+        // Prompt user for deletion confirmation
         alertForPhotoDeletion(photo: photo)
     }
-    // MARK: Ask user for photo deletion confirmation
-    private func alertForPhotoDeletion(photo: NSManagedObject) {
-        let delete = UIAlertAction(title: "Delete", style: .default) { (action) in
-            CoreDataController.sharedInstance.managedObjectContext.delete(photo)
-            CoreDataController.sharedInstance.saveContext()
-        }
-        let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-        displayAlert(withMessage: "Delete photo?", title: "", actions: [delete, cancel])
-    }
-}
-
-// MARK: - Photo selection
-
-extension PhotoListController: UIGestureRecognizerDelegate {
     
-    func enableLongPressDeletion() {
-        let lpgr = UILongPressGestureRecognizer(target: self, action: #selector(PhotoListController.presentDeletion(gestureRecognizer:)))
-        lpgr.minimumPressDuration = 1
-        lpgr.delaysTouchesBegan = true
-        lpgr.delegate = self
-        self.collectionView.addGestureRecognizer(lpgr)
-    }
-    
-    func presentDeletion(gestureRecognizer: UILongPressGestureRecognizer) {
+    func userLongPressInitiated(gestureRecognizer: UILongPressGestureRecognizer) {
         guard gestureRecognizer.state == .began else {
             return
         }
@@ -230,6 +211,17 @@ extension PhotoListController: UIGestureRecognizerDelegate {
         editingModeEnabled = true
     }
     
+    // MARK: Ask user for photo deletion confirmation
+    private func alertForPhotoDeletion(photo: NSManagedObject) {
+        let delete = UIAlertAction(title: "Delete", style: .default) { (action) in
+            CoreDataController.sharedInstance.managedObjectContext.delete(photo)
+            CoreDataController.sharedInstance.saveContext()
+        }
+        let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        displayAlert(withMessage: "Delete photo?", title: "", actions: [delete, cancel])
+    }
+    
+    // Hide/show delete button for visible cells
     func toggleCellDeletionButton(visible: Bool) {
         for cell in collectionView.visibleCells as! [PhotoCell] {
             cell.deleteButton.isHidden = !visible
@@ -237,10 +229,9 @@ extension PhotoListController: UIGestureRecognizerDelegate {
     }
     
     // Tapping Cancel in Nav Bar
-    func hideDeletion() {
+    func cancelDeletionMode() {
         editingModeEnabled = false
     }
-    
 }
 
 // MARK: - UICollectionViewDelegate
