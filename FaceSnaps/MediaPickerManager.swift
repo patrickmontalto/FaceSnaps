@@ -8,6 +8,7 @@
 
 import UIKit
 import MobileCoreServices
+import AVFoundation
 
 // Restrict delegate to reference type only
 protocol MediaPickerManagerDelegate: class {
@@ -40,6 +41,9 @@ class MediaPickerManager: NSObject {
         
         // Edit image to square aspect ratio
         imagePickerController.allowsEditing = true
+        
+        // Add observer for Camera Device Orientation
+        NotificationCenter.default.addObserver(self, selector: #selector(MediaPickerManager.cameraChanged(notification:)), name: .AVCaptureSessionDidStartRunning, object: nil)
     }
     
     func presentImagePickerController(animated: Bool) {
@@ -50,14 +54,32 @@ class MediaPickerManager: NSObject {
     func dismissImagePickerController(animated: Bool, completion: @escaping (() -> Void)) {
         imagePickerController.dismiss(animated: animated, completion: completion)
     }
+    
+    deinit {
+        // Remove observer
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    // MARK: Camera Orientation Change
+    func cameraChanged(notification: Notification) {
+        DispatchQueue.main.async {
+            if self.imagePickerController.cameraDevice == .front {
+                self.imagePickerController.cameraViewTransform = CGAffineTransform.identity
+                self.imagePickerController.cameraViewTransform = (self.imagePickerController.cameraViewTransform).scaledBy(x: -1, y: 1)
+            } else {
+                self.imagePickerController.cameraViewTransform = CGAffineTransform.identity
+            }
+        }
+    }
+
 }
 
 extension MediaPickerManager: UINavigationControllerDelegate, UIImagePickerControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         
-        let editedImage = info[UIImagePickerControllerEditedImage] as! UIImage
+        let image = info[UIImagePickerControllerEditedImage] as! UIImage
         
-        let image = UIImage(cgImage: editedImage.cgImage!, scale: editedImage.scale, orientation: .upMirrored)
+//        let image = UIImage(cgImage: editedImage.cgImage!, scale: editedImage.scale, orientation: .upMirrored)
         
         // Pass image to our delegate
         delegate?.mediaPickerManager(manager: self, didFinishPickingImage: image)
