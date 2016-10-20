@@ -13,7 +13,7 @@ import CoreData
 class SortItemSelector<SortType: NSManagedObject>: NSObject, UITableViewDelegate {
     
     // Create set of tags/locations
-    private let sortItems: [SortType]
+    fileprivate let sortItems: [SortType]
     var checkedItems: Set<SortType> = []
     
     init(sortItems: [SortType]) {

@@ -16,12 +16,22 @@ protocol CustomTitleConvertible {
 
 extension Tag: CustomTitleConvertible {}
 
+// This data source is responsible for populating PhotoSortListController's UITableView
 class SortableDataSource<SortType: CustomTitleConvertible>: NSObject, UITableViewDataSource where SortType: NSManagedObject {
     
     let fetchedResultsController: NSFetchedResultsController<NSManagedObject>
     
     var results: [SortType] {
         return fetchedResultsController.fetchedObjects as! [SortType]
+    }
+    
+    var selectedTags: [NSManagedObjectID]? {
+        guard let selectedIdsStrings = UserDefaults.standard.array(forKey: "selectedTags") as? [String] else {
+            return nil
+        }
+        let selectedIdsUrls = selectedIdsStrings.map { URL(string: $0)! }
+        let selectedIds = selectedIdsUrls.map {(CoreDataController.sharedInstance.persistentStoreCoordinator.managedObjectID(forURIRepresentation: $0)!) }
+        return selectedIds
     }
     
     init(fetchRequest: NSFetchRequest<NSManagedObject>, managedObjectContext moc: NSManagedObjectContext) {
@@ -57,14 +67,26 @@ class SortableDataSource<SortType: CustomTitleConvertible>: NSObject, UITableVie
         let cell = UITableViewCell(style: .default, reuseIdentifier: "sortableItemCell")
         cell.selectionStyle = .none
         
+        // Read from User Defaults for last selected tags array.
+        // If there are any selected Tags, section 0, row 0 will be unchecked
+        
         switch (indexPath.section, indexPath.row) {
         case (0,0) :
+            // If any selected tags loaded, this will be unchecked
             cell.textLabel?.text = "All \(SortType.self)s"
-            cell.accessoryType = .checkmark
+            if selectedTags == nil {
+                cell.accessoryType = .checkmark
+            }
         case (1,_):
             
             guard let sortItem = fetchedResultsController.fetchedObjects?[indexPath.row] as? SortType else {
                 break
+            }
+            
+            if let selectedTags = selectedTags {
+                if selectedTags.contains(sortItem.objectID) {
+                    cell.accessoryType = .checkmark
+                }
             }
             
             cell.textLabel?.text = sortItem.title

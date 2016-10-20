@@ -46,6 +46,14 @@ class PhotoSortListController<SortType: CustomTitleConvertible>: UITableViewCont
     }
     
     @objc private func dismissPhotoSortListController() {
+        // When dismissed, if checkedItems is empty, set selectedTags to nil
+        if sortItemSelector.checkedItems.isEmpty {
+            UserDefaults.standard.set(nil, forKey: "selectedTags")
+        } else {
+            let selectedIdsURLs = sortItemSelector.checkedItems.map { $0.objectID.uriRepresentation() }
+            let selectedIdsStrings = selectedIdsURLs.map { $0.absoluteString }
+            UserDefaults.standard.set(selectedIdsStrings, forKey: "selectedTags")
+        }
         // When dismissed, call the closure set to onSortSelection
         guard let onSortSelection = onSortSelection else {
             return
