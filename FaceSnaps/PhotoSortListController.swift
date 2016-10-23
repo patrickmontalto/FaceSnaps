@@ -33,11 +33,6 @@ class PhotoSortListController<SortType: CustomTitleConvertible>: UITableViewCont
         super.viewDidLoad()
         setupNavigation()
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
     
     func setupNavigation() {
         let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(PhotoSortListController.dismissPhotoSortListController))
@@ -46,14 +41,26 @@ class PhotoSortListController<SortType: CustomTitleConvertible>: UITableViewCont
     }
     
     @objc private func dismissPhotoSortListController() {
-        // When dismissed, if checkedItems is empty, set selectedTags to nil
-        if sortItemSelector.checkedItems.isEmpty {
-            UserDefaults.standard.set(nil, forKey: "selectedTags")
+        // Set or clear selected Locations or Tags
+        if dataSource.sortableItemType == .Tag {
+            // When dismissed, if checkedItems is empty, set selectedTags to nil
+            if sortItemSelector.checkedItems.isEmpty {
+                UserDefaults.standard.set(nil, forKey: "selectedTags")
+            } else {
+                let selectedIdsURLs = sortItemSelector.checkedItems.map { $0.objectID.uriRepresentation() }
+                let selectedIdsStrings = selectedIdsURLs.map { $0.absoluteString }
+                UserDefaults.standard.set(selectedIdsStrings, forKey: "selectedTags")
+            }
         } else {
-            let selectedIdsURLs = sortItemSelector.checkedItems.map { $0.objectID.uriRepresentation() }
-            let selectedIdsStrings = selectedIdsURLs.map { $0.absoluteString }
-            UserDefaults.standard.set(selectedIdsStrings, forKey: "selectedTags")
+            if sortItemSelector.checkedItems.isEmpty {
+                UserDefaults.standard.set(nil, forKey: "selectedLocations")
+            } else {
+                let selectedLocations = sortItemSelector.checkedItems.map { $0.title }
+                UserDefaults.standard.set(selectedLocations, forKey: "selectedLocations")
+            }
         }
+        
+        
         // When dismissed, call the closure set to onSortSelection
         guard let onSortSelection = onSortSelection else {
             return

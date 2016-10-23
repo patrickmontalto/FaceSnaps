@@ -16,6 +16,13 @@ protocol CustomTitleConvertible {
 
 extension Tag: CustomTitleConvertible {}
 
+extension Location: CustomTitleConvertible {}
+
+// Enum for switching on
+enum SortableItemType {
+    case Tag, Location
+}
+
 // This data source is responsible for populating PhotoSortListController's UITableView
 class SortableDataSource<SortType: CustomTitleConvertible>: NSObject, UITableViewDataSource where SortType: NSManagedObject {
     
@@ -25,6 +32,11 @@ class SortableDataSource<SortType: CustomTitleConvertible>: NSObject, UITableVie
         return fetchedResultsController.fetchedObjects as! [SortType]
     }
     
+    // Selected locations are only their string representations, not actual objects in Core Data
+    var selectedLocations: [String]? {
+        return UserDefaults.standard.array(forKey: "selectedLocations") as? [String]
+    }
+    
     var selectedTags: [NSManagedObjectID]? {
         guard let selectedIdsStrings = UserDefaults.standard.array(forKey: "selectedTags") as? [String] else {
             return nil
@@ -32,6 +44,15 @@ class SortableDataSource<SortType: CustomTitleConvertible>: NSObject, UITableVie
         let selectedIdsUrls = selectedIdsStrings.map { URL(string: $0)! }
         let selectedIds = selectedIdsUrls.map {(CoreDataController.sharedInstance.persistentStoreCoordinator.managedObjectID(forURIRepresentation: $0)!) }
         return selectedIds
+    }
+    
+    // TODO: Should this be optional?
+    var sortableItemType: SortableItemType {
+        if (SortType.self as NSObject.Type) is Tag.Type {
+            return .Tag
+        } else {
+            return .Location
+        }
     }
     
     init(fetchRequest: NSFetchRequest<NSManagedObject>, managedObjectContext moc: NSManagedObjectContext) {
@@ -70,11 +91,53 @@ class SortableDataSource<SortType: CustomTitleConvertible>: NSObject, UITableVie
         // Read from User Defaults for last selected tags array.
         // If there are any selected Tags, section 0, row 0 will be unchecked
         
+        configureCellForSortType(cell: cell, atIndexPath: indexPath)
+                
+//        switch (indexPath.section, indexPath.row) {
+//        case (0,0) :
+//            // If any selected tags loaded, this will be unchecked
+//            cell.textLabel?.text = "All \(SortType.self)s"
+//            if selectedTags == nil {
+//                cell.accessoryType = .checkmark
+//            }
+//        case (1,_):
+//            
+//            guard let sortItem = fetchedResultsController.fetchedObjects?[indexPath.row] as? SortType else {
+//                break
+//            }
+//            
+//            if let selectedTags = selectedTags {
+//                if selectedTags.contains(sortItem.objectID) {
+//                    cell.accessoryType = .checkmark
+//                }
+//            }
+//            
+//            cell.textLabel?.text = sortItem.title
+//        default: break
+//        }
+        
+        return cell
+    }
+    
+    func configureCellForSortType(cell: UITableViewCell, atIndexPath indexPath: IndexPath) {
+        // Read from User Defaults for last selected tags/locations array.
+        // If there are any selected Locations/Tags, section 0, row 0 will be unchecked
+        
+        // Switch on type to determine which collection to be checking for
+        let selectedItems: [Any]? = {
+            switch sortableItemType {
+            case .Tag:
+                return selectedTags
+            case .Location:
+                return selectedLocations
+            }
+        }()
+        
         switch (indexPath.section, indexPath.row) {
         case (0,0) :
-            // If any selected tags loaded, this will be unchecked
+            // If any selected tags/locations loaded, this will be unchecked
             cell.textLabel?.text = "All \(SortType.self)s"
-            if selectedTags == nil {
+            if selectedItems == nil {
                 cell.accessoryType = .checkmark
             }
         case (1,_):
@@ -82,19 +145,30 @@ class SortableDataSource<SortType: CustomTitleConvertible>: NSObject, UITableVie
             guard let sortItem = fetchedResultsController.fetchedObjects?[indexPath.row] as? SortType else {
                 break
             }
-            
-            if let selectedTags = selectedTags {
-                if selectedTags.contains(sortItem.objectID) {
-                    cell.accessoryType = .checkmark
+        
+            // TODO: Refactor this. Can it be used for two filters at once?
+            if sortableItemType == .Tag {
+                if let selectedTags = selectedTags {
+                    if selectedTags.contains(sortItem.objectID) {
+                        cell.accessoryType = .checkmark
+                    }
+                }
+            } else {
+                if let selectedLocations = selectedLocations {
+                    if selectedLocations.contains(sortItem.title) {
+                        cell.accessoryType = .checkmark
+                    }
                 }
             }
+            
+            print((sortItem as! Location).title)
             
             cell.textLabel?.text = sortItem.title
         default: break
         }
         
-        return cell
     }
+    
 }
 
 

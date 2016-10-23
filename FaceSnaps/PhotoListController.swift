@@ -142,8 +142,10 @@ extension PhotoListController {
     
     func setupNavigationBar() {
         // TODO: Implement location sorting
-        let sortTagsButton = UIBarButtonItem(title: "Tags", style: .plain, target: self, action: #selector(PhotoListController.presentSortController))
-        navigationItem.setRightBarButtonItems([sortTagsButton], animated: true)
+        let sortTagsButton = UIBarButtonItem(title: "Tags", style: .plain, target: self, action: #selector(PhotoListController.presentTagSortController))
+        let sortLocationsButton = UIBarButtonItem(title: "Locations", style: .plain, target: self, action: #selector(PhotoListController.presentLocationSortController))
+        navigationItem.setRightBarButtonItems([sortTagsButton, sortLocationsButton], animated: true)
+        
         
         // Cancel editing button for photo deletion
         navigationItem.setLeftBarButtonItems([cancelEditingButton], animated: true)
@@ -154,7 +156,7 @@ extension PhotoListController {
         }
     }
     
-    @objc private func presentSortController() {
+    @objc private func presentTagSortController() {
         let tagDataSource = SortableDataSource<Tag>(fetchRequest: Tag.allTagsRequest, managedObjectContext: CoreDataController.sharedInstance.managedObjectContext)
         
         let sortItemSelector = SortItemSelector(sortItems: tagDataSource.results)
@@ -183,6 +185,36 @@ extension PhotoListController {
         
         present(navigationController, animated: true, completion: nil)
         
+    }
+    
+    @objc private func presentLocationSortController() {
+        let locationDataSource = SortableDataSource<Location>(fetchRequest: Location.allLocationsRequest, managedObjectContext: CoreDataController.sharedInstance.managedObjectContext)
+        
+        let sortItemSelector = SortItemSelector(sortItems: locationDataSource.results)
+        
+        let sortController = PhotoSortListController(dataSource: locationDataSource, sortItemSelector: sortItemSelector)
+        sortController.onSortSelection = { checkedItems in
+            
+            // Check that checkedItems isn't empty, otherwise there's no need for a predicate
+            if !checkedItems.isEmpty {
+                var predicates = [NSPredicate]()
+                for location in checkedItems {
+                    let predicate = NSPredicate(format: "%K = %@", "location.title", location.title)
+                    predicates.append(predicate)
+                }
+                
+                let compoundPredicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+                // Use data source to perform fetch with predicate
+                self.dataSource.performFetch(withPredicate: compoundPredicate)
+            } else {
+                // Reset to all photos in data store
+                self.dataSource.performFetch(withPredicate: nil)
+            }
+        }
+        
+        let navigationController = UINavigationController(rootViewController: sortController)
+        
+        present(navigationController, animated: true, completion: nil)
     }
 }
 

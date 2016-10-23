@@ -3,6 +3,7 @@
     <entity name="Location" representedClassName=".Location" syncable="YES">
         <attribute name="latitude" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="longitude" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="title" attributeType="String" syncable="YES"/>
         <relationship name="photos" toMany="YES" deletionRule="Deny" destinationEntity="Photo" inverseName="location" inverseEntity="Photo" syncable="YES"/>
     </entity>
     <entity name="Photo" representedClassName=".Photo" syncable="YES">
@@ -16,8 +17,8 @@
         <relationship name="photos" toMany="YES" deletionRule="Deny" destinationEntity="Photo" inverseName="tags" inverseEntity="Photo" syncable="YES"/>
     </entity>
     <elements>
+        <element name="Location" positionX="441" positionY="198" width="128" height="105"/>
         <element name="Photo" positionX="207" positionY="-9" width="128" height="103"/>
         <element name="Tag" positionX="34" positionY="195" width="128" height="73"/>
-        <element name="Location" positionX="441" positionY="198" width="128" height="88"/>
     </elements>
 </model>
