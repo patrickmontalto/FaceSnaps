@@ -31,6 +31,7 @@
 		CDCE98511DB1B75400BBB0FF /* CellAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCE98501DB1B75400BBB0FF /* CellAnimator.swift */; };
 		CDE86F331DB4069E00076D65 /* UIViewControllerExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE86F321DB4069E00076D65 /* UIViewControllerExtensions.swift */; };
 		CDE86F351DB43F6C00076D65 /* PhotoDeletionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE86F341DB43F6C00076D65 /* PhotoDeletionManager.swift */; };
+		CDE86F391DBEC66400076D65 /* Array+FilterDuplicates.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE86F381DBEC66400076D65 /* Array+FilterDuplicates.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -60,6 +61,7 @@
 		CDCE98501DB1B75400BBB0FF /* CellAnimator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CellAnimator.swift; sourceTree = "<group>"; };
 		CDE86F321DB4069E00076D65 /* UIViewControllerExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIViewControllerExtensions.swift; sourceTree = "<group>"; };
 		CDE86F341DB43F6C00076D65 /* PhotoDeletionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoDeletionManager.swift; sourceTree = "<group>"; };
+		CDE86F381DBEC66400076D65 /* Array+FilterDuplicates.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Array+FilterDuplicates.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,6 +159,7 @@
 			isa = PBXGroup;
 			children = (
 				CDE86F321DB4069E00076D65 /* UIViewControllerExtensions.swift */,
+				CDE86F381DBEC66400076D65 /* Array+FilterDuplicates.swift */,
 			);
 			name = Convenience;
 			sourceTree = "<group>";
@@ -251,6 +254,7 @@
 				3A32A6B01DA30A8500AEE45F /* LocationManager.swift in Sources */,
 				3A32A6B21DA5F21C00AEE45F /* CoreDataController.swift in Sources */,
 				3A32A6B71DA6060A00AEE45F /* Photo.swift in Sources */,
+				CDE86F391DBEC66400076D65 /* Array+FilterDuplicates.swift in Sources */,
 				3A32DD281DA16C2C00CD2669 /* PhotoFilterController.swift in Sources */,
 				3A32A6C01DA94BD900AEE45F /* PhotoFetchedResultsController.swift in Sources */,
 				3A32A6AE1DA2E5E700AEE45F /* PhotoMetadataController.swift in Sources */,

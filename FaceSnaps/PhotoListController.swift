@@ -159,7 +159,12 @@ extension PhotoListController {
     @objc private func presentTagSortController() {
         let tagDataSource = SortableDataSource<Tag>(fetchRequest: Tag.allTagsRequest, managedObjectContext: CoreDataController.sharedInstance.managedObjectContext)
         
-        let sortItemSelector = SortItemSelector(sortItems: tagDataSource.results)
+        // TODO: No results
+        guard let results = tagDataSource.results else {
+            return
+        }
+        
+        let sortItemSelector = SortItemSelector(sortItems: results)
         
         let sortController = PhotoSortListController(dataSource: tagDataSource, sortItemSelector: sortItemSelector)
         sortController.onSortSelection = { checkedItems in
@@ -190,7 +195,12 @@ extension PhotoListController {
     @objc private func presentLocationSortController() {
         let locationDataSource = SortableDataSource<Location>(fetchRequest: Location.allLocationsRequest, managedObjectContext: CoreDataController.sharedInstance.managedObjectContext)
         
-        let sortItemSelector = SortItemSelector(sortItems: locationDataSource.results)
+        // TODO: No results
+        guard let results = locationDataSource.results else {
+            return
+        }
+        
+        let sortItemSelector = SortItemSelector(sortItems: results)
         
         let sortController = PhotoSortListController(dataSource: locationDataSource, sortItemSelector: sortItemSelector)
         sortController.onSortSelection = { checkedItems in

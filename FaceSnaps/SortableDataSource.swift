@@ -28,8 +28,14 @@ class SortableDataSource<SortType: CustomTitleConvertible>: NSObject, UITableVie
     
     let fetchedResultsController: NSFetchedResultsController<NSManagedObject>
     
-    var results: [SortType] {
-        return fetchedResultsController.fetchedObjects as! [SortType]
+    var results: [SortType]? {
+        if sortableItemType == .Location {
+            let locations = fetchedResultsController.fetchedObjects as! [Location]
+            let filteredLocations = Location.uniqueLocations(locations: locations)
+            
+            return filteredLocations as? [SortType]
+        }
+        return fetchedResultsController.fetchedObjects as? [SortType]
     }
     
     // Selected locations are only their string representations, not actual objects in Core Data
@@ -79,7 +85,7 @@ class SortableDataSource<SortType: CustomTitleConvertible>: NSObject, UITableVie
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
             case 0: return 1
-            case 1: return fetchedResultsController.fetchedObjects?.count ?? 0
+            case 1: return results?.count ?? 0
             default: return 0
         }
     }
@@ -92,30 +98,6 @@ class SortableDataSource<SortType: CustomTitleConvertible>: NSObject, UITableVie
         // If there are any selected Tags, section 0, row 0 will be unchecked
         
         configureCellForSortType(cell: cell, atIndexPath: indexPath)
-                
-//        switch (indexPath.section, indexPath.row) {
-//        case (0,0) :
-//            // If any selected tags loaded, this will be unchecked
-//            cell.textLabel?.text = "All \(SortType.self)s"
-//            if selectedTags == nil {
-//                cell.accessoryType = .checkmark
-//            }
-//        case (1,_):
-//            
-//            guard let sortItem = fetchedResultsController.fetchedObjects?[indexPath.row] as? SortType else {
-//                break
-//            }
-//            
-//            if let selectedTags = selectedTags {
-//                if selectedTags.contains(sortItem.objectID) {
-//                    cell.accessoryType = .checkmark
-//                }
-//            }
-//            
-//            cell.textLabel?.text = sortItem.title
-//        default: break
-//        }
-        
         return cell
     }
     
@@ -142,7 +124,7 @@ class SortableDataSource<SortType: CustomTitleConvertible>: NSObject, UITableVie
             }
         case (1,_):
             
-            guard let sortItem = fetchedResultsController.fetchedObjects?[indexPath.row] as? SortType else {
+            guard let sortItem = results?[indexPath.row] else {
                 break
             }
         
@@ -160,9 +142,7 @@ class SortableDataSource<SortType: CustomTitleConvertible>: NSObject, UITableVie
                     }
                 }
             }
-            
-            print((sortItem as! Location).title)
-            
+                        
             cell.textLabel?.text = sortItem.title
         default: break
         }

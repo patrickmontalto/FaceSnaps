@@ -18,10 +18,7 @@ class Location: NSManagedObject {
         request.sortDescriptors = [NSSortDescriptor(key: "latitude", ascending: true)]
         return request
     }()
-    
-    // Return city and state (administrativeArea) as a string
-    //var title: String?
-    
+        
     private func getCityAndState(latitude: Double, longitude: Double, completionHandler: @escaping ((String) -> Void)) {
 
         let location = CLLocation(latitude: latitude, longitude: longitude)
@@ -38,6 +35,10 @@ class Location: NSManagedObject {
         }
     }
     
+    class func uniqueLocations(locations: [CustomTitleConvertible]) -> [CustomTitleConvertible] {
+        return locations.filterDuplicates { $0.title == $1.title }
+    }
+        
     class func location(withLatitude latitude: Double, longitude: Double) -> Location {
         let location = NSEntityDescription.insertNewObject(forEntityName: entityName, into: CoreDataController.sharedInstance.managedObjectContext) as! Location
         
